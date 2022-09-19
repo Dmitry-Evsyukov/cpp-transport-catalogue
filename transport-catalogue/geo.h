@@ -1,10 +1,9 @@
 #pragma once
 #include <cmath>
 
-#define EARTH_RAD 6371000
-
 namespace transport_manager::compute_length {
     struct Coordinates {
+        Coordinates(double lat_, double lon_) : lat(lat_), lng(lon_) {}
         double lat;
         double lng;
 
@@ -25,6 +24,6 @@ namespace transport_manager::compute_length {
         static const double dr = 3.1415926535 / 180.;
         return acos(sin(from.lat * dr) * sin(to.lat * dr)
                     + cos(from.lat * dr) * cos(to.lat * dr) * cos(abs(from.lng - to.lng) * dr))
-               * EARTH_RAD;
+               * 6371000;
     }
 }

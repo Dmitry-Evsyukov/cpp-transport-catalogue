@@ -1,5 +1,4 @@
 #include "transport_catalogue.h"
-#include "stat_reader.h"
 #include <algorithm>
 namespace transport_manager {
     using namespace std;
@@ -10,8 +9,7 @@ namespace transport_manager {
         stop_pointers_[stops_[0].name] = &stops_[0];
     }
 
-    void
-    TransportManager::AddStopLength(const std::string &name, std::vector<std::pair<std::string, int>> &stops_length) {
+    void TransportManager::AddStopLength(const std::string &name, std::vector<std::pair<std::string, int>> &stops_length) {
         for (const auto &[stop, length]: stops_length) {
             stop_to_stop_length_[stop_pointers_[name]->name].insert({stop_pointers_[stop]->name, length});
         }
@@ -26,8 +24,16 @@ namespace transport_manager {
             bus_stops_[buses_[0].number].push_back(stop_pointers_[stop]);
             stop_buses_[stop_pointers_[stop]->name].insert(buses_[0].number);
         }
+    }
 
-        bus_pointers_[number]->stops_on_route = bus_stops_.at(number).size();
+    transport_manager::BusResponse TransportManager::GetBus(const string_view number) const {
+        BusResponse answer;
+        answer.bus_number = number;
+        if (bus_stops_.count(number) == 0) {
+            answer.route_length = -1;
+            return answer;
+        }
+        answer.stops_on_route = bus_stops_.at(number).size();
         vector<compute_length::Coordinates> coordinates;
         set<string_view> stops_once;
         for (const auto &stop: bus_stops_.at(number)) {
@@ -35,7 +41,7 @@ namespace transport_manager {
             coordinates.push_back({stop->latitude, stop->longitude});
         }
 
-        bus_pointers_[number]->unique_stops = stops_once.size();
+        answer.unique_stops = stops_once.size();
         double route_length_theory = 0;
         for (int i = 0; i < coordinates.size() - 1; ++i) {
             route_length_theory += std::abs(ComputeDistance(coordinates[i], coordinates[i + 1]));
@@ -44,42 +50,30 @@ namespace transport_manager {
             string next_station = bus_stops_.at(number).at(i + 1)->name;
 
             if (stop_to_stop_length_.count(this_station) == 0) {
-                bus_pointers_[number]->route_length += stop_to_stop_length_.at(next_station).at(this_station);
+                answer.route_length += stop_to_stop_length_.at(next_station).at(this_station);
                 continue;
             }
 
             if (stop_to_stop_length_.at(this_station).count(next_station) == 0) {
-                bus_pointers_[number]->route_length += stop_to_stop_length_.at(next_station).at(this_station);
+                answer.route_length += stop_to_stop_length_.at(next_station).at(this_station);
             } else {
-                bus_pointers_[number]->route_length += stop_to_stop_length_.at(this_station).at(next_station);
+                answer.route_length += stop_to_stop_length_.at(this_station).at(next_station);
             }
         }
 
-        bus_pointers_[number]->courvature = static_cast<double>(bus_pointers_[number]->route_length) / route_length_theory;
-    }
-
-    output::BusResponse TransportManager::GetBus(const string_view number) const {
-        output::BusResponse answer;
-        answer.bus_number = number;
-        if (bus_stops_.count(number) == 0) {
-            answer.route_length = -1;
-            return answer;
-        }
-        answer.unique_stops = bus_pointers_.at(number)->unique_stops;
-        answer.courvature = bus_pointers_.at(number)->courvature;
-        answer.stops_on_route = bus_pointers_.at(number)->stops_on_route;
-        answer.route_length = bus_pointers_.at(number)->route_length;
-
+        answer.courvature = static_cast<double>(answer.route_length) / route_length_theory;
         return answer;
     }
 
-    output::StopResponse TransportManager::GetStop(const std::string_view name) const {
-        output::StopResponse answer;
+    StopResponse TransportManager::GetStop(const std::string_view name) const {
+        StopResponse answer;
         answer.name = string(name);
         if (stop_buses_.count(name) == 0) {
             answer.flag = false;
             return answer;
         }
+        answer.longitude = stop_pointers_.at(name)->longitude;
+        answer.latitude = stop_pointers_.at(name)->latitude;
         answer.flag = true;
         for (const auto stop: stop_buses_.at(name)) {
             answer.buses.push_back(string(stop));
