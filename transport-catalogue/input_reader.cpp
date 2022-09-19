@@ -1,8 +1,10 @@
 #include "input_reader.h"
+#include <iostream>
 
 using namespace std;
 namespace transport_manager::parse_query {
-    std::tuple<std::string, double, double> ParseStop(std::string_view line) {
+    ParseStructStop ParseStop(std::string_view line) {
+        ParseStructStop answer;
         line.remove_prefix(5);
         string name = string(line.substr(0,line.find(':')));
         line.remove_prefix(name.size() + 2);
@@ -10,12 +12,17 @@ namespace transport_manager::parse_query {
         line.remove_prefix(latitude.size() + 2);
         if (line.find(',') != line.npos) {
             string longitude = string(line.substr(0,line.find(',')));
-            return tuple(name, atof(latitude.c_str()), atof(longitude.c_str()));
+
+            return answer;
         }
         string longitude = string(line);
-        return tuple(name, atof(latitude.c_str()), atof(longitude.c_str()));
+        answer.name = name;
+        answer.latitude = atof(latitude.c_str());
+        answer.longitude = atof(longitude.c_str());
+        return answer;
     }
-    std::pair<string, std::vector<std::string>> ParseBus(std::string_view line) {
+    ParseStructBus ParseBus(std::string_view line) {
+        ParseStructBus answer;
         line.remove_prefix(4);
         string bus = string(line.substr(0, line.find(':')));
         line.remove_prefix(bus.size() + 2);
@@ -26,7 +33,9 @@ namespace transport_manager::parse_query {
                 line.remove_prefix(stops[stops.size() - 1].size() + 3);
             }
             stops.push_back(string(line));
-            return pair(bus, stops);
+            answer.name = move(bus);
+            answer.stops = move(stops);
+            return answer;
         }
 
         while (line.find('-') != line.npos) {
@@ -39,11 +48,13 @@ namespace transport_manager::parse_query {
         for (auto iter = stops_.rbegin() + 1; iter != stops_.rend(); ++iter) {
             stops.push_back(move(*iter));
         }
-        return pair(bus, stops);
+        answer.name = move(bus);
+        answer.stops = move(stops);
+        return answer;
     }
 
 
-    std::pair<std::string, std::vector<pair<std::string, int>>> ParseStopLength(std::string_view line) {
+    ParseStructStopLength ParseStopLength(std::string_view line) {
         line.remove_prefix(5);
         string name = string(line.substr(0,line.find(':')));
         line.remove_prefix(name.size() + 2);
@@ -65,4 +76,47 @@ namespace transport_manager::parse_query {
         }
         return {name, stops_length};
     }
+
+    transport_manager::TransportManager ParseQueries(std::istream& input) {
+        int query_count;
+
+        input >> query_count;
+
+        string line;
+        getline(input, line);
+
+        vector<string> stops_q;
+        vector<string> bus_q;
+
+        for (int i = 0; i < query_count; ++i) {
+            getline(input, line);
+            if (line[0] == 'B') {
+                bus_q.push_back(move(line));
+            } else {
+                stops_q.push_back(move(line));
+            }
+        }
+
+        transport_manager::TransportManager transport_manager;
+        for (const auto& q : stops_q) {
+            auto stop = transport_manager::parse_query::ParseStop(q);
+            transport_manager.AddStop(stop.name, stop.latitude , stop.longitude);
+        }
+
+        for (const auto& q : stops_q) {
+            if (q.find("m to ") == q.npos) {
+                continue;
+            }
+            auto [name, stop_length] = transport_manager::parse_query::ParseStopLength(q);
+            transport_manager.AddStopLength(name, stop_length);
+        }
+
+        for (const auto q : bus_q) {
+            auto [bus, stops] = transport_manager::parse_query::ParseBus(q);
+            transport_manager.AddBus(bus, stops);
+        }
+        return transport_manager;
+    }
 }
+
+

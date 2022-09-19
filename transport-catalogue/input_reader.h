@@ -3,11 +3,30 @@
 #include <string_view>
 #include <vector>
 #include <unordered_map>
+#include "transport_catalogue.h"
 
 namespace transport_manager::parse_query {
-    std::tuple<std::string, double, double> ParseStop(std::string_view line);
+    struct ParseStructStop {
+        std::string name;
+        double longitude = 0;
+        double latitude = 0;
+    };
 
-    std::pair<std::string, std::vector<std::string>> ParseBus(std::string_view line);
+    struct ParseStructBus {
+        std::string name;
+        std::vector<std::string> stops;
+    };
 
-    std::pair<std::string, std::vector<std::pair<std::string, int>>> ParseStopLength(std::string_view line);
+    struct ParseStructStopLength {
+        std::string name;
+        std::vector<std::pair<std::string, int>> stops_distances;
+    };
+
+    ParseStructStop ParseStop(std::string_view line);
+
+    ParseStructBus ParseBus(std::string_view line);
+
+    ParseStructStopLength ParseStopLength(std::string_view line);
+
+    transport_manager::TransportManager ParseQueries(std::istream& input);
 }

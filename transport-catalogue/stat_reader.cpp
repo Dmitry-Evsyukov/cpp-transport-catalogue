@@ -35,4 +35,23 @@ namespace transport_manager::output {
         out << endl;
         return out;
     }
+
+    void ResponseAllQueries(std::istream& in, std::ostream& out, transport_manager::TransportManager& transport_manager) {
+        int query_count;
+        std::string line;
+        in >> query_count;
+        getline(in, line);
+
+        using namespace transport_manager::output;
+        for (int i = 0; i < query_count; ++i) {
+            getline(in, line);
+            if (line[0] == 'B') {
+                line = line.substr(4);
+                out << transport_manager.GetBus(line);
+            } else {
+                line = line.substr(5);
+                out << transport_manager.GetStop(line);
+            }
+        }
+    }
 }

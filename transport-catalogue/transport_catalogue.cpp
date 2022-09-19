@@ -26,6 +26,36 @@ namespace transport_manager {
             bus_stops_[buses_[0].number].push_back(stop_pointers_[stop]);
             stop_buses_[stop_pointers_[stop]->name].insert(buses_[0].number);
         }
+
+        bus_pointers_[number]->stops_on_route = bus_stops_.at(number).size();
+        vector<compute_length::Coordinates> coordinates;
+        set<string_view> stops_once;
+        for (const auto &stop: bus_stops_.at(number)) {
+            stops_once.insert(stop_pointers_.at(stop->name)->name);
+            coordinates.push_back({stop->latitude, stop->longitude});
+        }
+
+        bus_pointers_[number]->unique_stops = stops_once.size();
+        double route_length_theory = 0;
+        for (int i = 0; i < coordinates.size() - 1; ++i) {
+            route_length_theory += std::abs(ComputeDistance(coordinates[i], coordinates[i + 1]));
+
+            string this_station = bus_stops_.at(number).at(i)->name;
+            string next_station = bus_stops_.at(number).at(i + 1)->name;
+
+            if (stop_to_stop_length_.count(this_station) == 0) {
+                bus_pointers_[number]->route_length += stop_to_stop_length_.at(next_station).at(this_station);
+                continue;
+            }
+
+            if (stop_to_stop_length_.at(this_station).count(next_station) == 0) {
+                bus_pointers_[number]->route_length += stop_to_stop_length_.at(next_station).at(this_station);
+            } else {
+                bus_pointers_[number]->route_length += stop_to_stop_length_.at(this_station).at(next_station);
+            }
+        }
+
+        bus_pointers_[number]->courvature = static_cast<double>(bus_pointers_[number]->route_length) / route_length_theory;
     }
 
     output::BusResponse TransportManager::GetBus(const string_view number) const {
@@ -35,35 +65,11 @@ namespace transport_manager {
             answer.route_length = -1;
             return answer;
         }
-        answer.stops_on_route = bus_stops_.at(number).size();
-        vector<compute_length::Coordinates> coordinates;
-        set<string_view> stops_once;
-        for (const auto &stop: bus_stops_.at(number)) {
-            stops_once.insert(stop_pointers_.at(stop->name)->name);
-            coordinates.push_back({stop->latitude, stop->longitude});
-        }
+        answer.unique_stops = bus_pointers_.at(number)->unique_stops;
+        answer.courvature = bus_pointers_.at(number)->courvature;
+        answer.stops_on_route = bus_pointers_.at(number)->stops_on_route;
+        answer.route_length = bus_pointers_.at(number)->route_length;
 
-        answer.unique_stops = stops_once.size();
-        double route_length_theory = 0;
-        for (int i = 0; i < coordinates.size() - 1; ++i) {
-            route_length_theory += std::abs(ComputeDistance(coordinates[i], coordinates[i + 1]));
-
-            string this_station = bus_stops_.at(number).at(i)->name;
-            string next_station = bus_stops_.at(number).at(i + 1)->name;
-
-            if (stop_to_stop_length_.count(this_station) == 0) {
-                answer.route_length += stop_to_stop_length_.at(next_station).at(this_station);
-                continue;
-            }
-
-            if (stop_to_stop_length_.at(this_station).count(next_station) == 0) {
-                answer.route_length += stop_to_stop_length_.at(next_station).at(this_station);
-            } else {
-                answer.route_length += stop_to_stop_length_.at(this_station).at(next_station);
-            }
-        }
-
-        answer.courvature = static_cast<double>(answer.route_length) / route_length_theory;
         return answer;
     }
 

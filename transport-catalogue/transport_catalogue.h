@@ -6,10 +6,27 @@
 #include <deque>
 #include <vector>
 #include <string>
-#include "stat_reader.h"
 #include "geo.h"
 
+namespace transport_manager::output {
+    struct BusResponse {
+        std::string_view bus_number;
+        int stops_on_route = 0;
+        int unique_stops = 0;
+        double route_length = 0;
+        double courvature = 0;
+    };
+
+    struct StopResponse {
+        std::vector<std::string> buses;
+        bool flag;
+        std::string name;
+    };
+}
+
 namespace transport_manager {
+
+
     struct Stop {
         std::string name;
         double latitude;
@@ -18,6 +35,10 @@ namespace transport_manager {
 
     struct Bus {
         std::string number;
+        int stops_on_route = 0;
+        int unique_stops = 0;
+        double route_length = 0;
+        double courvature = 0;
     };
 
 
@@ -37,8 +58,8 @@ namespace transport_manager {
         std::deque<Bus> buses_;
         std::deque<Stop> stops_;
 
-        std::unordered_map<std::string_view, const Stop *> stop_pointers_;
-        std::unordered_map<std::string_view, const Bus *> bus_pointers_;
+        std::unordered_map<std::string_view, Stop *> stop_pointers_;
+        std::unordered_map<std::string_view, Bus *> bus_pointers_;
 
         std::unordered_map<std::string_view, std::set<std::string_view>> stop_buses_;
         std::unordered_map<std::string_view, std::vector<const Stop *>> bus_stops_;
