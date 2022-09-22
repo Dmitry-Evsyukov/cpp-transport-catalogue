@@ -35,7 +35,7 @@ namespace transport_manager::parse_query {
     }
 }
 namespace transport_manager::output {
-    void PrintJSONQueries(const json::Array& stat_requests, const transport_manager::TransportManager& transport_manager, const json::Array& buses_, const json::Array& stops, const RenderSet& render_set, const SphereProjector& projector) {
+    void PrintJSONQueries(const json::Array& stat_requests, RendererMap renderer, const TransportManager& transport_manager) {
         vector<json::Node> root;
         for (const auto& query : stat_requests) {
             json::Dict node;
@@ -68,7 +68,7 @@ namespace transport_manager::output {
                 node["stop_count"] = json::Node(answer.stops_on_route);
                 node["unique_stop_count"] = json::Node(answer.unique_stops);
             } else {
-                auto doc = RenderMap(transport_manager, buses_, stops, render_set, projector);
+                auto doc = renderer();
                 ostringstream os;
                 doc.Render(os);
                 auto file = os.str();

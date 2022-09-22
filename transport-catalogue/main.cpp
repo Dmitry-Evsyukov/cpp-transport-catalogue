@@ -53,8 +53,8 @@ int main() {
     sort(stops.begin(), stops.end(), [](const Node& lhs, const Node& rhs){
         return lhs.AsMap().at("name").AsString() < rhs.AsMap().at("name").AsString();
     });
-
-    transport_manager::output::PrintJSONQueries(stat_requests, transport_manager, buses, stops, render_set, projector);
+    RendererMap renderer(transport_manager, buses, stops, render_set, projector);
+    transport_manager::output::PrintJSONQueries(stat_requests, renderer, transport_manager);
 
     return 0;
 }

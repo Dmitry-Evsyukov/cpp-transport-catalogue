@@ -82,5 +82,19 @@ private:
     double zoom_coeff_ = 0;
 };
 
-svg::Document RenderMap(const transport_manager::TransportManager& transport_manager, const json::Array& buses, const json::Array& stops, const RenderSet& render_set, const SphereProjector& projector);
+class RendererMap {
+public:
+    RendererMap(const transport_manager::TransportManager& transport_manager_,
+                const json::Array& buses_,
+                const json::Array& stops_,
+                const RenderSet& render_set_,
+                const SphereProjector& projector_) : transport_manager(transport_manager_), buses(buses_), stops(stops_), render_set(render_set_), projector(projector_) {}
+    svg::Document operator()();
 
+private:
+    const transport_manager::TransportManager& transport_manager;
+    const json::Array& buses;
+    const json::Array& stops;
+    const RenderSet& render_set;
+    const SphereProjector& projector;
+};

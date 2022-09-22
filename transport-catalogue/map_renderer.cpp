@@ -75,7 +75,8 @@ RenderSet ParseRenderSet(const json::Dict& node) {
         };
     }
 
-svg::Document RenderMap(const transport_manager::TransportManager& transport_manager, const json::Array& buses, const json::Array& stops, const RenderSet& render_set, const SphereProjector& projector) {
+
+    svg::Document RendererMap::operator()() {
         svg::Document trips;
 
         int i = 0;
@@ -180,6 +181,8 @@ svg::Document RenderMap(const transport_manager::TransportManager& transport_man
             trips.Add(text_dlc);
             trips.Add(text);
         }
-
         return trips;
-}
+    }
+
+
+
