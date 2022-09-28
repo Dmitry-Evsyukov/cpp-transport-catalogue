@@ -84,10 +84,10 @@ RenderSet ParseRenderSet(const json::Dict& node) {
         for (const auto& node : buses) {
             svg::Polyline trip;
             vector<string> stops_on_that_trip;
-            for (const auto &node: node.AsMap().at("stops").AsArray()) {
+            for (const auto &node: node.AsDict().at("stops").AsArray()) {
                 stops_on_that_trip.push_back(node.AsString());
             }
-            if (!node.AsMap().at("is_roundtrip").AsBool()) {
+            if (!node.AsDict().at("is_roundtrip").AsBool()) {
                 vector<string> stops_ = stops_on_that_trip;
                 for (auto iter = stops_.rbegin() + 1; iter != stops_.rend(); ++iter) {
                     stops_on_that_trip.push_back(move(*iter));
@@ -106,7 +106,7 @@ RenderSet ParseRenderSet(const json::Dict& node) {
 
         i = 0;
         for (const auto& node : buses) {
-            auto stops_on_this_trip = node.AsMap().at("stops").AsArray();
+            auto stops_on_this_trip = node.AsDict().at("stops").AsArray();
             if (stops_on_this_trip.empty()) continue;
 
             svg::Text bus_name;
@@ -118,7 +118,7 @@ RenderSet ParseRenderSet(const json::Dict& node) {
                     .SetFontSize(render_set.bus_label_font_size)
                     .SetFontFamily("Verdana")
                     .SetFontWeight("bold")
-                    .SetData(node.AsMap().at("name").AsString());
+                    .SetData(node.AsDict().at("name").AsString());
             bus_name_dlc.SetPosition(projector({stop.latitude, stop.longitude}))
                     .SetFillColor(render_set.underlayer_color)
                     .SetStrokeColor(render_set.underlayer_color)
@@ -126,15 +126,15 @@ RenderSet ParseRenderSet(const json::Dict& node) {
                     .SetFontSize(render_set.bus_label_font_size)
                     .SetFontFamily("Verdana")
                     .SetFontWeight("bold")
-                    .SetData(node.AsMap().at("name").AsString())
+                    .SetData(node.AsDict().at("name").AsString())
                     .SetStrokeLineJoin(svg::StrokeLineJoin::ROUND)
                     .SetStrokeLineCap(svg::StrokeLineCap::ROUND)
                     .SetStrokeWidth(render_set.underlayer_width);
             trips.Add(bus_name_dlc);
             trips.Add(bus_name);
-            if (!node.AsMap().at("is_roundtrip").AsBool()) {
+            if (!node.AsDict().at("is_roundtrip").AsBool()) {
                 auto end_stop_name = transport_manager.GetStop(stops_on_this_trip[stops_on_this_trip.size() - 1].AsString());
-                if (end_stop_name.name != node.AsMap().at("stops").AsArray()[0].AsString()) {
+                if (end_stop_name.name != node.AsDict().at("stops").AsArray()[0].AsString()) {
                     bus_name.SetPosition(projector({end_stop_name.latitude, end_stop_name.longitude}));
                     bus_name_dlc.SetPosition(projector({end_stop_name.latitude, end_stop_name.longitude}));
                     trips.Add(bus_name_dlc);
@@ -149,7 +149,7 @@ RenderSet ParseRenderSet(const json::Dict& node) {
 
         for (const auto& stop : stops) {
             svg::Circle circle;
-            auto name = stop.AsMap().at("name").AsString();
+            auto name = stop.AsDict().at("name").AsString();
             auto s = transport_manager.GetStop(name);
             if (s.buses.empty()) continue;
             circle.SetRadius(render_set.stop_radius).SetCenter(projector({s.latitude, s.longitude})).SetFillColor("white");
@@ -159,7 +159,7 @@ RenderSet ParseRenderSet(const json::Dict& node) {
         for (const auto& stop : stops) {
             svg::Text text;
             svg::Text text_dlc;
-            auto name = stop.AsMap().at("name").AsString();
+            auto name = stop.AsDict().at("name").AsString();
             auto s = transport_manager.GetStop(name);
             if (s.buses.empty()) continue;
             text.SetPosition(projector({s.latitude, s.longitude}))

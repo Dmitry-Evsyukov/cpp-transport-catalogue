@@ -9,10 +9,10 @@ using namespace std;
 using namespace json;
 
 int main() {
-    const auto dict = Load(cin).GetRoot().AsMap();
+    const auto dict = Load(cin).GetRoot().AsDict();
     const auto base_requests = dict.at("base_requests").AsArray();
     const auto stat_requests = dict.at("stat_requests").AsArray();
-    const auto render_settings = dict.at("render_settings").AsMap();
+    const auto render_settings = dict.at("render_settings").AsDict();
 
     json::Array buses;
     json::Array stops;
@@ -20,7 +20,7 @@ int main() {
     vector<transport_manager::compute_length::Coordinates> points;
 
     for (const auto& node : base_requests) {
-        if (node.AsMap().at("type").AsString() == "Stop") {
+        if (node.AsDict().at("type").AsString() == "Stop") {
             stops.push_back(node);
             auto [name, lon, lat] = transport_manager::parse_query::ParseStop(node);
             transport_manager.AddStop(name, lat, lon);
@@ -47,11 +47,11 @@ int main() {
                               render_set.height, render_set.padding);
 
     sort(buses.begin(), buses.end(), [](const Node& lhs, const Node& rhs){
-        return lhs.AsMap().at("name").AsString() < rhs.AsMap().at("name").AsString();
+        return lhs.AsDict().at("name").AsString() < rhs.AsDict().at("name").AsString();
     });
 
     sort(stops.begin(), stops.end(), [](const Node& lhs, const Node& rhs){
-        return lhs.AsMap().at("name").AsString() < rhs.AsMap().at("name").AsString();
+        return lhs.AsDict().at("name").AsString() < rhs.AsDict().at("name").AsString();
     });
     RendererMap renderer(transport_manager, buses, stops, render_set, projector);
     transport_manager::output::PrintJSONQueries(stat_requests, renderer, transport_manager);
