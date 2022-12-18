@@ -17,8 +17,7 @@ public:
     using runtime_error::runtime_error;
 };
 
-class Node final
-    : private std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string> {
+class Node final : private std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string> {
 public:
     using variant::variant;
     using Value = variant;
