@@ -1,0 +1,33 @@
+#pragma once
+
+#include <memory>
+#include "router.h"
+#include "json.h"
+namespace graph{
+
+
+    class TransportRouter {
+    public:
+        TransportRouter(std::vector<std::pair<std::string, std::vector<std::string>>> buses,
+                        std::unordered_map<std::string_view, std::unordered_map<std::string_view, int>> stop_distances,
+                        int bus_wait_time, double bus_velocity, size_t vertex_count, std::vector<std::string> stops);
+
+        void Initialize();
+
+        std::optional<std::pair<json::Array, double>> FindNearestWay(const std::string& from, const std::string& to) const;
+
+        bool IsInitialized() const;
+    private:
+        std::unique_ptr<Router<double>> router_;
+        std::vector<std::pair<std::string, std::vector<std::string>>> buses_;
+        std::unordered_map<std::string_view , std::unordered_map<std::string_view , int>> stop_distances_;
+        int bus_wait_time_;
+        double bus_velocity_;
+        DirectedWeightedGraph<double> graph_;
+        std::vector<std::string> stops_;
+
+        std::map<std::string, std::vector<VertexId>> vertex_name_id_;
+        std::unordered_map<VertexId , std::string> vertex_bus_;
+        std::unordered_map<VertexId, std::string> vertex_stop_;
+    };
+}

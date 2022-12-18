@@ -4,6 +4,7 @@
 #include "transport_catalogue.h"
 #include "map_renderer.h"
 #include "json_reader.h"
+#include "transport_router.h"
 
 using namespace std;
 using namespace json;
@@ -13,12 +14,12 @@ int main() {
     const auto base_requests = dict.at("base_requests").AsArray();
     const auto stat_requests = dict.at("stat_requests").AsArray();
     const auto render_settings = dict.at("render_settings").AsDict();
+    const auto routing_settings = dict.at("routing_settings").AsDict();
 
     json::Array buses;
     json::Array stops;
     transport_manager::TransportManager transport_manager;
     vector<transport_manager::compute_length::Coordinates> points;
-
     for (const auto& node : base_requests) {
         if (node.AsDict().at("type").AsString() == "Stop") {
             stops.push_back(node);
@@ -29,13 +30,19 @@ int main() {
         }
     }
 
+    vector<string> stop_names;
     for (const auto& node : stops) {
         auto [stop, stops_length] = transport_manager::parse_query::ParseStopLength(node);
         transport_manager.AddStopLength(stop, stops_length);
+        stop_names.push_back(stop);
     }
 
+    std::unordered_map<std::string_view, std::unordered_map<std::string_view, int>> stop_distances = transport_manager.GetStSLength();
+
+    std::vector<std::pair<string, vector<string>>> bus_stops;
     for (const auto& node : buses) {
         auto [bus, stops_here] = transport_manager::parse_query::ParseBus(node);
+        bus_stops.push_back({bus, stops_here});
         transport_manager.AddBus(bus, stops_here);
         for (const auto& stop : stops_here) {
             auto buf = transport_manager.GetStop(stop);
@@ -54,7 +61,9 @@ int main() {
         return lhs.AsDict().at("name").AsString() < rhs.AsDict().at("name").AsString();
     });
     RendererMap renderer(transport_manager, buses, stops, render_set, projector);
-    transport_manager::output::PrintJSONQueries(stat_requests, renderer, transport_manager);
+
+    graph::TransportRouter transport_router(bus_stops, stop_distances, routing_settings.at("bus_wait_time").AsInt(), routing_settings.at("bus_velocity").AsInt(), stop_names.size() * 2, stop_names);
+    transport_manager::output::PrintJSONQueries(stat_requests, renderer, transport_manager, transport_router);
 
     return 0;
 }

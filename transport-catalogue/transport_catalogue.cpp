@@ -81,4 +81,7 @@ namespace transport_manager {
         sort(answer.buses.begin(), answer.buses.end());
         return answer;
     }
+
+    const std::unordered_map<std::string_view, std::unordered_map<std::string_view, int>> &
+    transport_manager::TransportManager::GetStSLength() const { return stop_to_stop_length_; }
 }

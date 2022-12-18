@@ -17,6 +17,7 @@ namespace transport_manager {
 
     struct Bus {
         std::string number;
+
     };
 
     struct BusResponse {
@@ -47,9 +48,14 @@ namespace transport_manager {
 
         StopResponse GetStop(const std::string_view name) const;
 
+        const std::unordered_map<std::string_view, std::unordered_map<std::string_view, int>>& GetStSLength() const;
+
     private:
         std::deque<Bus> buses_;
         std::deque<Stop> stops_;
+
+        int bus_wait_time;
+        double bus_velocity;
 
         std::unordered_map<std::string_view, const Stop *> stop_pointers_;
         std::unordered_map<std::string_view, const Bus *> bus_pointers_;

@@ -2,6 +2,7 @@
 #include "json_reader.h"
 #include "json.h"
 #include "json_builder.h"
+#include "transport_router.h"
 
 using namespace std;
 namespace transport_manager::parse_query {
@@ -36,7 +37,7 @@ namespace transport_manager::parse_query {
     }
 }
 namespace transport_manager::output {
-    void PrintJSONQueries(const json::Array& stat_requests, RendererMap& renderer, const TransportManager& transport_manager) {
+    void PrintJSONQueries(const json::Array& stat_requests, RendererMap& renderer, const TransportManager& transport_manager,  graph::TransportRouter& transport_router) {
         vector<json::Node> root;
         json::Builder builder;
         builder.StartArray();
@@ -70,18 +71,24 @@ namespace transport_manager::output {
                 node["route_length"] = json::Node(answer.route_length);
                 node["stop_count"] = json::Node(answer.stops_on_route);
                 node["unique_stop_count"] = json::Node(answer.unique_stops);
-            } else {
+            } else if (query.AsDict().at("type").AsString() == "Map") {
                 auto doc = renderer();
                 ostringstream os;
                 doc.Render(os);
                 auto file = os.str();
                 node["map"] = json::Node(file);
+            } else {
+                if (!transport_router.IsInitialized()) transport_router.Initialize();
+                auto answer = transport_router.FindNearestWay(query.AsDict().at("from").AsString(), query.AsDict().at("to").AsString());
+                if (!answer) {
+                    node["error_message"] = json::Node("not found");
+                } else {
+                    node["total_time"] = json::Node(answer.value().second);
+                    node["items"] = json::Node(answer.value().first);
+                }
             }
             root.push_back(json::Node(node));
         }
         json::Print(json::Document(json::Builder{}.Value(root).Build()), cout);
-        //json::Document response(root);
-
-        //json::Print(response, cout);
     }
 }
