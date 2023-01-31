@@ -1,0 +1,39 @@
+syntax = "proto3";
+package transport_router_serialization;
+import "graph.proto";
+
+message EdgeId {
+  uint32 edge_id = 1;
+}
+
+message RoutesIntDataOptional {
+  double weight = 1;
+  EdgeId prev_edge = 2;
+}
+
+message RoutesInternalData {
+  repeated RoutesIntDataOptional routes_int_data = 1;
+}
+
+message Router {
+  repeated RoutesInternalData routes_internal_data = 1;
+}
+
+message StopName_Id {
+  string stop = 1;
+  repeated uint32 vertex_id = 2;
+}
+
+message IdName {
+  uint32 vertex_id = 1;
+  string name = 2;
+}
+
+message TransportRouter {
+  Graph graph = 1;
+  Router router = 2;
+  uint32 bus_wait_time = 3;
+  double bus_velocity = 4;
+  repeated StopName_Id vertex_name_id = 5;
+  repeated IdName vertex_stop = 6;
+}

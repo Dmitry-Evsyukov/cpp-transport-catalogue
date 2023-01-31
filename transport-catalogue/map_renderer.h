@@ -8,6 +8,14 @@
 #include "svg.h"
 #include "json.h"
 #include "transport_catalogue.h"
+#include <map_renderer.pb.h>
+
+struct DeserializedBus {
+    std::string name;
+    std::vector<std::string> stops;
+    bool is_roundtrip;
+};
+
 
 inline const double EPSILON = 1e-6;
 inline bool IsZero(double value) {
@@ -72,6 +80,10 @@ public:
             zoom_coeff_ = *height_zoom;
         }
     }
+    SphereProjector(double pad, double min_lon, double max_lat, double coeff) : padding_(pad), min_lon_(min_lon), max_lat_(max_lat), zoom_coeff_(coeff) {}
+
+    sphere_projector_ser::SphereProjector SerializeSP() const;
+    static SphereProjector DeserializeSPFromIstream(const sphere_projector_ser::SphereProjector& s_p);
 
     svg::Point operator()(transport_manager::compute_length::Coordinates coords) const;
 
@@ -85,16 +97,16 @@ private:
 class RendererMap {
 public:
     RendererMap(const transport_manager::TransportManager& transport_manager_,
-                const json::Array& buses_,
-                const json::Array& stops_,
+                const std::vector<DeserializedBus>&  buses_,
+                const std::vector<std::string>& stops_,
                 const RenderSet& render_set_,
                 const SphereProjector& projector_) : transport_manager(transport_manager_), buses(buses_), stops(stops_), render_set(render_set_), projector(projector_) {}
     svg::Document operator()();
 
 private:
     const transport_manager::TransportManager& transport_manager;
-    const json::Array& buses;
-    const json::Array& stops;
+    const std::vector<DeserializedBus>& buses;
+    const std::vector<std::string>& stops;
     const RenderSet& render_set;
     const SphereProjector& projector;
 };

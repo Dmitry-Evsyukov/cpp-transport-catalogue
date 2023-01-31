@@ -1,0 +1,48 @@
+syntax = "proto3";
+import "map_renderer.proto";
+import "svg.proto";
+import "transport_router.proto";
+package transport_catalogue_serialization;
+
+message Stop {
+  string name = 1;
+  double longitude = 2;
+  double latitude = 3;
+}
+
+message StopToBuses {
+  uint32 stop_index = 1;
+  repeated uint32 bus_indexes = 2;
+}
+
+message BusToStops {
+  uint32 bus_index = 1;
+  repeated uint32 stop_index = 2;
+}
+
+message StopLengthPair {
+  uint32 stop_index = 1;
+  uint32 length = 2;
+}
+
+message StopToStopsLength {
+  uint32 stop_index = 1;
+  repeated StopLengthPair stop_length = 2;
+}
+
+message TransportManager {
+  repeated string buses = 1;
+  repeated Stop stops = 2;
+  repeated BusToStops bus_to_stops = 3;
+  repeated StopToBuses stop_to_buses = 4;
+  repeated StopToStopsLength stop_to_stops_length = 5;
+}
+
+message TransportCatalogue {
+  TransportManager t_m = 1;
+  renderer_set_serialization.RenderSet r_s = 2;
+  sphere_projector_ser.Stops stops = 3;
+  sphere_projector_ser.AllBuses buses = 4;
+  sphere_projector_ser.SphereProjector s_p = 5;
+  transport_router_serialization.TransportRouter transport_router = 6;
+}

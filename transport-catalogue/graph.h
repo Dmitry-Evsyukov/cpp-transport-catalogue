@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <vector>
+#include <graph.pb.h>
 
 namespace graph {
 
@@ -28,6 +29,7 @@ private:
 
 public:
     DirectedWeightedGraph() = default;
+
     explicit DirectedWeightedGraph(size_t vertex_count);
     EdgeId AddEdge(const Edge<Weight>& edge);
 
@@ -35,6 +37,64 @@ public:
     size_t GetEdgeCount() const;
     const Edge<Weight>& GetEdge(EdgeId edge_id) const;
     IncidentEdgesRange GetIncidentEdges(VertexId vertex) const;
+
+    transport_router_serialization::Graph Serialize() const {
+        transport_router_serialization::Graph graph_serialized;
+        int x = 0;
+        for (const auto& i_l : incidence_lists_) {
+            transport_router_serialization::IncidenceList incidence_list;
+            for (const uint32_t& edge_id : i_l) {
+                incidence_list.add_edge_id(edge_id);
+            }
+
+            graph_serialized.add_incidence_lists();
+            *graph_serialized.mutable_incidence_lists(x) = incidence_list;
+            ++x;
+        }
+        x = 0;
+        for (const auto& edge : edges_) {
+            transport_router_serialization::Edge edge_ser;
+
+            edge_ser.set_from(edge.from);
+            edge_ser.set_to(edge.to);
+            edge_ser.set_weight(edge.weight);
+            edge_ser.set_span_count(edge.span_count);
+            edge_ser.set_is_bus(edge.is_bus);
+            edge_ser.set_bus_name(edge.bus_name);
+
+            graph_serialized.add_edges();
+            *graph_serialized.mutable_edges(x) = edge_ser;
+            ++x;
+        }
+        return graph_serialized;
+    }
+
+    static  DirectedWeightedGraph<double> DeserializeGraph(const transport_router_serialization::Graph& graph_ser) {
+        DirectedWeightedGraph<double> graph;
+        graph.incidence_lists_.clear();
+        graph.edges_.clear();
+        for (const auto& incid_l_ser : graph_ser.incidence_lists()) {
+            IncidenceList incid_l;
+            for (const auto& edge_id : incid_l_ser.edge_id()) {
+                incid_l.push_back(edge_id);
+            }
+            graph.incidence_lists_.push_back(std::move(incid_l));
+        }
+
+        for (const auto& edge_ser : graph_ser.edges()) {
+            Edge<double> edge;
+
+            edge.weight = edge_ser.weight();
+            edge.bus_name = edge_ser.bus_name();
+            edge.is_bus = edge_ser.is_bus();
+            edge.span_count = edge_ser.span_count();
+            edge.to = edge_ser.to();
+            edge.from = edge_ser.from();
+
+            graph.edges_.push_back(std::move(edge));
+        }
+        return std::move(graph);
+    }
 
 private:
     std::vector<Edge<Weight>> edges_;

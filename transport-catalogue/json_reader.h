@@ -20,6 +20,4 @@ namespace transport_manager::parse_query {
 }
 
 
-namespace transport_manager::output {
-    void PrintJSONQueries(const json::Array& stat_requests, RendererMap& rendererMap, const TransportManager& transport_manager, graph::TransportRouter& transport_router);
-}
+

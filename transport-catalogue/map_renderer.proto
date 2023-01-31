@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package sphere_projector_ser;
+
+message SphereProjector {
+  double padding_ = 1;
+  double min_lon = 2;
+  double max_lat = 3;
+  double zoom_coeff = 4;
+}
+
+message Stops {
+  repeated string stops = 1;
+}
+
+message Bus {
+  string bus = 1;
+  bool is_roundtrip = 2;
+  repeated string stops = 3;
+}
+
+message AllBuses {
+  repeated Bus buses = 1;
+}
+

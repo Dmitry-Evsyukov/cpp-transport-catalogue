@@ -6,6 +6,7 @@
 #include <deque>
 #include <vector>
 #include <string>
+#include <transport_catalogue.pb.h>
 #include "geo.h"
 
 namespace transport_manager {
@@ -13,11 +14,12 @@ namespace transport_manager {
         std::string name;
         double latitude;
         double longitude;
+        size_t index;
     };
 
     struct Bus {
         std::string number;
-
+        size_t index;
     };
 
     struct BusResponse {
@@ -48,6 +50,10 @@ namespace transport_manager {
 
         StopResponse GetStop(const std::string_view name) const;
 
+        transport_catalogue_serialization::TransportManager Serialize() const;
+
+        static transport_manager::TransportManager DeserializeTM(const transport_catalogue_serialization::TransportManager& transport_catalogue);
+
         const std::unordered_map<std::string_view, std::unordered_map<std::string_view, int>>& GetStSLength() const;
 
     private:
@@ -66,3 +72,4 @@ namespace transport_manager {
         std::unordered_map<std::string_view, std::unordered_map<std::string_view, int>> stop_to_stop_length_;
     };
 }
+
