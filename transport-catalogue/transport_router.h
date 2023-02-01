@@ -3,7 +3,7 @@
 #include <memory>
 #include "router.h"
 #include "json.h"
-#include "map_renderer.h"
+//#include "map_renderer.h"
 namespace graph {
     class TransportRouter {
     public:

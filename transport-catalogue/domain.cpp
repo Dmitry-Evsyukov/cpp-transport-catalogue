@@ -4,6 +4,19 @@
 using namespace std;
 using namespace json;
 
+void SerializeTransportCatalogue(std::ostream& out, const transport_manager::TransportManager& t_m, const RenderSet& r_s, const SphereProjector& s_p, const json::Array& stops, const json::Array& buses, const graph::TransportRouter& transport_router){
+    transport_catalogue_serialization::TransportCatalogue transport_catalogue;
+    *transport_catalogue.mutable_t_m() = t_m.Serialize();
+    *transport_catalogue.mutable_r_s() = SerializeRenderSet(r_s);
+    *transport_catalogue.mutable_s_p() = s_p.SerializeSP();
+    *transport_catalogue.mutable_stops() = SerializeStops(stops);
+    *transport_catalogue.mutable_buses() = SerializeAllBuses(buses);
+    *transport_catalogue.mutable_transport_router() = transport_router.Serialize();
+
+    transport_catalogue.SerializeToOstream(&out);
+}
+
+
 namespace transport_manager::input {
 int MakeBase() {
     const auto dict = Load(cin).GetRoot().AsDict();

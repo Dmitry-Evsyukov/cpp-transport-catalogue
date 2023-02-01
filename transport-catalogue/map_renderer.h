@@ -8,37 +8,14 @@
 #include "svg.h"
 #include "json.h"
 #include "transport_catalogue.h"
-#include <map_renderer.pb.h>
-
-struct BusStops {
-    std::string name;
-    std::vector<std::string> stops;
-    bool is_roundtrip;
-};
+#include "serialization.h"
 
 inline const double EPSILON = 1e-6;
 inline bool IsZero(double value) {
     return std::abs(value) < EPSILON;
 }
 
-struct RenderSet {
-    double width = 0;
-    double height = 0;
-    double padding = 0;
-    double line_width = 0;
-    double stop_radius = 0;
-    double bus_label_font_size = 0;
-    svg::Point bus_label_offset;
-    double stop_label_font_size = 0;
-    svg::Point stop_label_offset;
-    svg::Color underlayer_color;
-    double underlayer_width;
-    std::vector<svg::Color> colors;
-};
-
-
 RenderSet ParseRenderSet(const json::Dict& node);
-
 
 class SphereProjector {
 public:
