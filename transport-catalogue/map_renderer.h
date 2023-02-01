@@ -10,12 +10,11 @@
 #include "transport_catalogue.h"
 #include <map_renderer.pb.h>
 
-struct DeserializedBus {
+struct BusStops {
     std::string name;
     std::vector<std::string> stops;
     bool is_roundtrip;
 };
-
 
 inline const double EPSILON = 1e-6;
 inline bool IsZero(double value) {
@@ -97,7 +96,7 @@ private:
 class RendererMap {
 public:
     RendererMap(const transport_manager::TransportManager& transport_manager_,
-                const std::vector<DeserializedBus>&  buses_,
+                const std::vector<BusStops>&  buses_,
                 const std::vector<std::string>& stops_,
                 const RenderSet& render_set_,
                 const SphereProjector& projector_) : transport_manager(transport_manager_), buses(buses_), stops(stops_), render_set(render_set_), projector(projector_) {}
@@ -105,7 +104,7 @@ public:
 
 private:
     const transport_manager::TransportManager& transport_manager;
-    const std::vector<DeserializedBus>& buses;
+    const std::vector<BusStops>& buses;
     const std::vector<std::string>& stops;
     const RenderSet& render_set;
     const SphereProjector& projector;

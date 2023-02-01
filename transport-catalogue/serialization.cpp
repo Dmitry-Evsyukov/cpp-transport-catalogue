@@ -96,10 +96,10 @@ std::vector<std::string> DeSerializeStops(const sphere_projector_ser::Stops& sto
     return move(stops);
 }
 
-std::vector<DeserializedBus> DeSerializeAllBuses(const sphere_projector_ser::AllBuses& buses_ser) {
-    std::vector<DeserializedBus> buses;
+std::vector<BusStops> DeSerializeAllBuses(const sphere_projector_ser::AllBuses& buses_ser) {
+    std::vector<BusStops> buses;
     for (const auto& bus_ser : buses_ser.buses()) {
-        DeserializedBus bus;
+        BusStops bus;
         bus.name = bus_ser.bus();
         bus.is_roundtrip = bus_ser.is_roundtrip();
         for (const auto& stop : bus_ser.stops()) {

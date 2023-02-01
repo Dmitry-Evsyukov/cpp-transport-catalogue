@@ -4,9 +4,7 @@
 #include "router.h"
 #include "json.h"
 #include "map_renderer.h"
-namespace graph{
-
-
+namespace graph {
     class TransportRouter {
     public:
         TransportRouter(std::vector<std::pair<std::string, std::vector<std::string>>> buses,
@@ -25,17 +23,16 @@ namespace graph{
         transport_router_serialization::TransportRouter Serialize() const;
         static TransportRouter DeserializeTransportRouter(const transport_router_serialization::TransportRouter& t_r);
     private:
-         std::unique_ptr<Router<double>> router_;
+        std::unique_ptr<Router<double>> router_;
         std::vector<std::pair<std::string, std::vector<std::string>>> buses_;
         std::unordered_map<std::string_view , std::unordered_map<std::string_view , int>> stop_distances_;
-         int bus_wait_time_;
-         double bus_velocity_;
-         DirectedWeightedGraph<double> graph_;
+        int bus_wait_time_;
+        double bus_velocity_;
+        DirectedWeightedGraph<double> graph_;
 
-        //не забыть инициализировать это поле
         std::vector<std::string> stops_;
 
-         std::map<std::string, std::vector<VertexId>> vertex_name_id_;
-         std::unordered_map<VertexId, std::string> vertex_stop_;
+        std::map<std::string, std::vector<VertexId>> vertex_name_id_;
+        std::unordered_map<VertexId, std::string> vertex_stop_;
     };
 }
